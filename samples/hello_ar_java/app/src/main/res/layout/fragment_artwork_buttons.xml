@@ -1,0 +1,21 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/artwork_buttons_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:background="#AA000000"
+    android:padding="10dp">
+
+    <ImageButton
+        android:id="@+id/artwork_button_1"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="5dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/artwork_preview_1" />
+
+    <!-- Repeat for artwork_button_2, artwork_button_3, artwork_button_4 -->
+
+</LinearLayout>

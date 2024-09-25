@@ -41,12 +41,14 @@ android {
 
 dependencies {
     // ARCore (Google Play Services for AR) library.
-    implementation 'com.google.ar:core:1.44.0'
+    implementation 'com.google.ar:core:1.45.0'
 
     // Obj - a simple Wavefront OBJ file loader
     // https://github.com/javagl/Obj
     implementation 'de.javagl:obj:0.4.0'
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.17.1'
+    implementation 'androidx.viewpager2:viewpager2:1.1.0'
 }

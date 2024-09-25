@@ -14,27 +14,21 @@
  * limitations under the License.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.3'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
-}
+#ifndef C_ARCORE_HELLOE_AR_JNI_INTERFACE_H_
+#define C_ARCORE_HELLOE_AR_JNI_INTERFACE_H_
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        mavenLocal()
-    }
-}
+#include <jni.h>
+/**
+ * Helper functions to provide access to Java from C via JNI.
+ */
+extern "C" {
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
+// Helper function used to access the jni environment on the current thread.
+// In this sample, no consideration is made for detaching the thread when the
+// thread exits. This can cause memory leaks, so production applications should
+// detach when the thread no longer needs access to the JVM.
+JNIEnv *GetJniEnv();
+
+jclass FindClass(const char *classname);
+}  // extern "C"
+#endif
