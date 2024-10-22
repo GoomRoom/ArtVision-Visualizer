@@ -1,0 +1,28 @@
+name: flutter_ar_cross_plat
+description: "new flutter ar cross"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+  ar_flutter_plugin: ^0.7.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/artwork_plane.glb
+    - assets/frame1.glb
+    - images/plane_texture.png
