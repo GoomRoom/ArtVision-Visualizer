@@ -60,6 +60,7 @@ class _ARHomePageState extends State<ARHomePage> {
   ARAnchor? currentAnchor;
   String selectedArtwork = 'assets/artwork_plane1.gltf';
   String selectedFrame = 'assets/frame1.gltf';
+  double currentScale = 0.2;
 
   @override
   void dispose() {
@@ -114,7 +115,28 @@ class _ARHomePageState extends State<ARHomePage> {
                 ),
               ],
             ),
-          )
+          ),
+          Positioned(
+            right: 20,
+            top: 100,
+            bottom: 100,
+            child: RotatedBox(
+              quarterTurns: 3,
+              child: Slider(
+                value: currentScale,
+                min: 0.1,
+                max: 1.0,
+                divisions: 9,
+                label: "Scale: ${currentScale.toStringAsFixed(1)}",
+                onChanged: (value) {
+                  setState(() {
+                    currentScale = value;
+                    _updateNodeScale(value);
+                  });
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -143,6 +165,7 @@ class _ARHomePageState extends State<ARHomePage> {
           onTap: () {
             setState(() {
               selectedArtwork = artwork;
+              _updateArtworkNode();
             });
           },
           child: Container(
@@ -194,6 +217,7 @@ class _ARHomePageState extends State<ARHomePage> {
           onTap: () {
             setState(() {
               selectedFrame = frame;
+              _updateFrameNode();
             });
           },
           child: Container(
@@ -222,7 +246,6 @@ class _ARHomePageState extends State<ARHomePage> {
     );
   }
 
-
   void onARViewCreated(ARSessionManager arSessionManager, ARObjectManager arObjectManager, ARAnchorManager arAnchorManager, ARLocationManager arLocationManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
@@ -244,6 +267,12 @@ class _ARHomePageState extends State<ARHomePage> {
     var newAnchor = ARPlaneAnchor(transformation: transformation);
     bool? didAddAnchor = await arAnchorManager.addAnchor(newAnchor);
     if (didAddAnchor!) {
+      // Remove previous anchor if it exists
+      if (currentAnchor != null) {
+        await arAnchorManager.removeAnchor(currentAnchor!);
+      }
+
+      anchors.clear();
       anchors.add(newAnchor);
       currentAnchor = newAnchor;
 
@@ -251,7 +280,7 @@ class _ARHomePageState extends State<ARHomePage> {
       artworkNode = ARNode(
         type: NodeType.localGLTF2,
         uri: selectedArtwork,
-        scale: vector.Vector3(0.2, 0.2, 0.2),
+        scale: vector.Vector3(currentScale, currentScale, currentScale),
         position: vector.Vector3(0.0, 0.0, 0.0), // Positioned relative to the anchor
         rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
       );
@@ -264,7 +293,7 @@ class _ARHomePageState extends State<ARHomePage> {
       frameNode = ARNode(
         type: NodeType.localGLTF2,
         uri: selectedFrame,
-        scale: vector.Vector3(0.2, 0.2, 0.2),
+        scale: vector.Vector3(currentScale, currentScale, currentScale),
         position: vector.Vector3(0.0, 0.0, 0.0), // Positioned relative to the anchor
         rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
       );
@@ -291,7 +320,6 @@ class _ARHomePageState extends State<ARHomePage> {
 
     if (furthestHitTestResult != null) {
       // Add nodes at the location of the hit
-      //vector.Matrix3 worldRotation = vector.Matrix3.identity();
       furthestHitTestResult.worldTransform.setRotationX(0);
       furthestHitTestResult.worldTransform.setRotationY(0);
       furthestHitTestResult.worldTransform.setRotationZ(0);
@@ -306,5 +334,57 @@ class _ARHomePageState extends State<ARHomePage> {
     anchors = [];
     frameNode = null;
     artworkNode = null;
+  }
+
+  void _updateArtworkNode() async {
+    if (currentAnchor != null) {
+      await arObjectManager.removeNode(artworkNode!);
+      artworkNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedArtwork,
+        scale: vector.Vector3(currentScale, currentScale, currentScale),
+        position: vector.Vector3(0.0, 0.0, 0.0),
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      await arObjectManager.addNode(artworkNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+    }
+  }
+
+  void _updateFrameNode() async {
+    if (currentAnchor != null) {
+      await arObjectManager.removeNode(frameNode!);
+      frameNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedFrame,
+        scale: vector.Vector3(currentScale, currentScale, currentScale),
+        position: vector.Vector3(0.0, 0.0, 0.0),
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      await arObjectManager.addNode(frameNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+    }
+  }
+
+  void _updateNodeScale(double scale) async {
+    if (currentAnchor != null) {
+      await arObjectManager.removeNode(artworkNode!);
+      artworkNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedArtwork,
+        scale: vector.Vector3(scale, scale, scale),
+        position: vector.Vector3(0.0, 0.0, 0.0),
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      await arObjectManager.addNode(artworkNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+
+      await arObjectManager.removeNode(frameNode!);
+      frameNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedFrame,
+        scale: vector.Vector3(scale, scale, scale),
+        position: vector.Vector3(0.0, 0.0, 0.0),
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      await arObjectManager.addNode(frameNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+    }
   }
 }
