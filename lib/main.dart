@@ -11,7 +11,6 @@ import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
 import 'package:flutter/material.dart';
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
-import 'dart:math';
 
 void main() => runApp(ARFlutterApp());
 
@@ -23,7 +22,24 @@ class ARFlutterApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ARHomePage(),
+      home: StartScreen(),
+    );
+  }
+}
+
+class StartScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ARHomePage()),
+          ),
+          child: Text('Tap to Begin AR Session'),
+        ),
+      ),
     );
   }
 }
@@ -41,6 +57,9 @@ class _ARHomePageState extends State<ARHomePage> {
   List<ARAnchor> anchors = [];
   ARNode? frameNode;
   ARNode? artworkNode;
+  ARAnchor? currentAnchor;
+  String selectedArtwork = 'assets/artwork_plane1.gltf';
+  String selectedFrame = 'assets/frame1.gltf';
 
   @override
   void dispose() {
@@ -58,7 +77,7 @@ class _ARHomePageState extends State<ARHomePage> {
         children: [
           ARView(
             onARViewCreated: onARViewCreated,
-            planeDetectionConfig: PlaneDetectionConfig.horizontalAndVertical,
+            planeDetectionConfig: PlaneDetectionConfig.vertical,
           ),
           Positioned(
             bottom: 20,
@@ -67,20 +86,27 @@ class _ARHomePageState extends State<ARHomePage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.art_track),
-                      onPressed: () => _swapArtwork(),
-                      tooltip: 'Swap Artwork',
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.photo),
-                      onPressed: () => _swapFrame(),
-                      tooltip: 'Swap Frame',
-                    ),
-                  ],
+                DefaultTabController(
+                  length: 2,
+                  child: Column(
+                    children: [
+                      TabBar(
+                        tabs: [
+                          Tab(text: 'Artworks'),
+                          Tab(text: 'Frames'),
+                        ],
+                      ),
+                      Container(
+                        height: 100,
+                        child: TabBarView(
+                          children: [
+                            _buildArtworkSelection(),
+                            _buildFrameSelection(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: _removeEverything,
@@ -94,13 +120,116 @@ class _ARHomePageState extends State<ARHomePage> {
     );
   }
 
+  Widget _buildArtworkSelection() {
+    List<String> artworkOptions = [
+      'assets/artwork_plane1.gltf',
+      'assets/artwork_plane2.gltf',
+      'assets/artwork_plane3.gltf',
+    ];
+
+    List<String> artworkPreviewImages = [
+      'images/artwork_preview1.png',
+      'images/artwork_preview2.png',
+      'images/artwork_preview3.png',
+    ];
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: artworkOptions.length,
+      itemBuilder: (context, index) {
+        String artwork = artworkOptions[index];
+        String previewImage = artworkPreviewImages[index];
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedArtwork = artwork;
+            });
+          },
+          child: Container(
+            width: 80,
+            height: 70,
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16), // Rounded edges
+              border: Border.all(
+                color: selectedArtwork == artwork ? Colors.blue : Colors.grey,
+                width: 3,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16), // Rounded edges for the image
+              child: Image.asset(
+                previewImage,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFrameSelection() {
+    List<String> frameOptions = [
+      'assets/frame1.gltf',
+      'assets/frame2.gltf',
+      'assets/frame3.gltf',
+    ];
+
+    List<String> framePreviewImages = [
+      'images/frame_preview1.png',
+      'images/frame_preview2.png',
+      'images/frame_preview3.png',
+    ];
+
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: frameOptions.length,
+      itemBuilder: (context, index) {
+        String frame = frameOptions[index];
+        String previewImage = framePreviewImages[index];
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedFrame = frame;
+            });
+          },
+          child: Container(
+            width: 100,
+            height: 70,
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16), // Rounded edges
+              border: Border.all(
+                color: selectedFrame == frame ? Colors.blue : Colors.grey,
+                width: 3,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16), // Rounded edges for the image
+              child: Image.asset(
+                previewImage,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
   void onARViewCreated(ARSessionManager arSessionManager, ARObjectManager arObjectManager, ARAnchorManager arAnchorManager, ARLocationManager arLocationManager) {
     this.arSessionManager = arSessionManager;
     this.arObjectManager = arObjectManager;
     this.arAnchorManager = arAnchorManager;
 
     arSessionManager.onInitialize(
-      showFeaturePoints: false,
+      showFeaturePoints: true,
       showPlanes: true,
       customPlaneTexturePath: "images/triangle.png",
       showWorldOrigin: true,
@@ -110,100 +239,71 @@ class _ARHomePageState extends State<ARHomePage> {
     arSessionManager.onPlaneOrPointTap = onPlaneOrPointTapped;
   }
 
-  Future<void> _swapArtwork() async {
-    if (artworkNode != null) {
-      await arObjectManager.removeNode(artworkNode!);
+  Future<void> _addNodeToAnchor(vector.Matrix4 transformation) async {
+    // Create anchor at the tapped position
+    var newAnchor = ARPlaneAnchor(transformation: transformation);
+    bool? didAddAnchor = await arAnchorManager.addAnchor(newAnchor);
+    if (didAddAnchor!) {
+      anchors.add(newAnchor);
+      currentAnchor = newAnchor;
+
+      // Add artwork node to anchor
+      artworkNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedArtwork,
+        scale: vector.Vector3(0.2, 0.2, 0.2),
+        position: vector.Vector3(0.0, 0.0, 0.0), // Positioned relative to the anchor
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      bool? didAddArtworkNode = await arObjectManager.addNode(artworkNode!, planeAnchor: newAnchor);
+      if (!didAddArtworkNode!) {
+        arSessionManager.onError("Adding Artwork Node to Anchor failed");
+      }
+
+      // Add frame node to anchor
+      frameNode = ARNode(
+        type: NodeType.localGLTF2,
+        uri: selectedFrame,
+        scale: vector.Vector3(0.2, 0.2, 0.2),
+        position: vector.Vector3(0.0, 0.0, 0.0), // Positioned relative to the anchor
+        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
+      );
+      bool? didAddFrameNode = await arObjectManager.addNode(frameNode!, planeAnchor: newAnchor);
+      if (!didAddFrameNode!) {
+        arSessionManager.onError("Adding Frame Node to Anchor failed");
+      }
+    } else {
+      arSessionManager.onError("Adding Anchor failed");
     }
-
-    artworkNode = ARNode(
-      type: NodeType.localGLTF2,
-      uri: "assets/artwork_plane.gltf",
-      position: vector.Vector3(0.0, 0.0, -1.0),
-      scale: vector.Vector3(1.0, 1.0, 1.0),
-      rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
-    );
-
-    arObjectManager.addNode(artworkNode!);
-  }
-
-  Future<void> _swapFrame() async {
-    if (frameNode != null) {
-      await arObjectManager.removeNode(frameNode!);
-    }
-
-    frameNode = ARNode(
-      type: NodeType.localGLTF2,
-      uri: "assets/frame1.gltf",
-      position: vector.Vector3(0.0, 0.0, -1.0),
-      scale: vector.Vector3(1.0, 1.0, 1.0),
-      rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
-    );
-
-    arObjectManager.addNode(frameNode!);
   }
 
   Future<void> onPlaneOrPointTapped(List<ARHitTestResult> hitTestResults) async {
-    var singleHitTestResult = hitTestResults.firstWhere(
-            (hitTestResult) => hitTestResult.type == ARHitTestResultType.plane);
-    if (singleHitTestResult != null) {
-      vector.Vector3 position = vector.Vector3(
-        singleHitTestResult.worldTransform.getTranslation().x,
-        singleHitTestResult.worldTransform.getTranslation().y,
-        singleHitTestResult.worldTransform.getTranslation().z,
-      );
-
-      var newAnchor = ARPlaneAnchor(transformation: singleHitTestResult.worldTransform);
-      bool? didAddAnchor = await this.arAnchorManager.addAnchor(newAnchor);
-      if (didAddAnchor!) {
-        this.anchors.add(newAnchor);
-
-        // Add artwork node to anchor
-        if (artworkNode == null) {
-          artworkNode = ARNode(
-            type: NodeType.localGLTF2,
-            uri: "assets/artwork_plane.gltf",
-            scale: vector.Vector3(1.0, 1.0, 1.0),
-            position: position,
-            rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
-          );
-          bool? didAddArtworkNode =
-          await this.arObjectManager.addNode(artworkNode!, planeAnchor: newAnchor);
-          if (didAddArtworkNode!) {
-            this.nodes.add(artworkNode!);
-          } else {
-            this.arSessionManager.onError("Adding Artwork Node to Anchor failed");
-          }
+    // Find the furthest hit test result
+    ARHitTestResult? furthestHitTestResult;
+    for (var hitTestResult in hitTestResults) {
+      if (hitTestResult.type == ARHitTestResultType.plane) {
+        if (furthestHitTestResult == null ||
+            hitTestResult.distance > furthestHitTestResult.distance) {
+          furthestHitTestResult = hitTestResult;
         }
-
-        // Add frame node to anchor
-        if (frameNode == null) {
-          frameNode = ARNode(
-            type: NodeType.localGLTF2,
-            uri: "assets/frame1.gltf",
-            scale: vector.Vector3(1.0, 1.0, 1.0),
-            position: position,
-            rotation: vector.Vector4(1.0, 0.0, 0.0, 0.0),
-          );
-          bool? didAddFrameNode =
-          await this.arObjectManager.addNode(frameNode!, planeAnchor: newAnchor);
-          if (didAddFrameNode!) {
-            this.nodes.add(frameNode!);
-          } else {
-            this.arSessionManager.onError("Adding Frame Node to Anchor failed");
-          }
-        }
-      } else {
-        this.arSessionManager.onError("Adding Anchor failed");
       }
+    }
+
+    if (furthestHitTestResult != null) {
+      // Add nodes at the location of the hit
+      //vector.Matrix3 worldRotation = vector.Matrix3.identity();
+      furthestHitTestResult.worldTransform.setRotationX(0);
+      furthestHitTestResult.worldTransform.setRotationY(0);
+      furthestHitTestResult.worldTransform.setRotationZ(0);
+      await _addNodeToAnchor(furthestHitTestResult.worldTransform);
     }
   }
 
   Future<void> _removeEverything() async {
-    anchors.forEach((anchor) {
-      this.arAnchorManager.removeAnchor(anchor);
-    });
+    for (var anchor in anchors) {
+      await arAnchorManager.removeAnchor(anchor);
+    }
     anchors = [];
-    nodes = [];
     frameNode = null;
     artworkNode = null;
   }

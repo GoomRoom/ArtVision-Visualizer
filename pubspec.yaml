@@ -23,6 +23,5 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/artwork_plane.glb
-    - assets/frame1.glb
-    - images/plane_texture.png
+    - assets/
+    - images/
