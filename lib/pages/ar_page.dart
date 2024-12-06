@@ -263,10 +263,10 @@ class _ARHomePageState extends State<ARHomePage> {
 
     arSessionManager.onInitialize(
       //Debugging settings
-      showFeaturePoints: false,
+      showFeaturePoints: true,
       showPlanes: true,
       customPlaneTexturePath: "images/triangle.png",
-      showWorldOrigin: false,
+      showWorldOrigin: true,
     );
     arObjectManager.onInitialize();
 

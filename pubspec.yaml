@@ -10,6 +10,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  drop_shadow: ^0.1.0
+  camera: ^0.10.0
+  image_picker: ^1.1.2
+  path_provider: ^2.0.11
+  path: ^1.8.2
+  carousel_slider: ^4.0.0
+  share: ^2.0.4
+  webview_flutter: ^4.0.2
+  material_symbols_icons: ^4.2789.0
+  shared_preferences: ^2.0.15
+  flutter_colorpicker: ^1.0.3
+  photo_view: ^0.14.0
+  url_launcher: ^6.1.7
 
   cupertino_icons: ^1.0.6
   ar_flutter_plugin: ^0.7.3
