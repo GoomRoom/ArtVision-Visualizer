@@ -199,12 +199,14 @@ class _ARHomePageState extends State<ARHomePage> {
       'assets/frame1.gltf',
       'assets/frame2.gltf',
       'assets/frame3.gltf',
+      'assets/frame4.gltf'
     ];
 
     List<String> framePreviewImages = [
       'images/frame_preview1.png',
       'images/frame_preview2.png',
       'images/frame_preview3.png',
+      'images/frame_preview4.png',
     ];
 
     return ListView.builder(
@@ -281,7 +283,7 @@ class _ARHomePageState extends State<ARHomePage> {
         type: NodeType.localGLTF2,
         uri: selectedArtwork,
         scale: vector.Vector3(currentScale, currentScale, currentScale),
-        position: vector.Vector3(0.0, 0.0, 0.0), // Positioned relative to the anchor
+        position: vector.Vector3(0.0, 0.02, 0.0), // Positioned relative to the anchor
         rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
       );
       bool? didAddArtworkNode = await arObjectManager.addNode(artworkNode!, planeAnchor: newAnchor);
@@ -338,53 +340,45 @@ class _ARHomePageState extends State<ARHomePage> {
 
   void _updateArtworkNode() async {
     if (currentAnchor != null) {
-      await arObjectManager.removeNode(artworkNode!);
-      artworkNode = ARNode(
-        type: NodeType.localGLTF2,
-        uri: selectedArtwork,
-        scale: vector.Vector3(currentScale, currentScale, currentScale),
-        position: vector.Vector3(0.0, 0.0, 0.0),
-        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
-      );
-      await arObjectManager.addNode(artworkNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+      vector.Matrix4 currentTransformation = currentAnchor!.transformation;
+
+      // Remove the current anchor and replace it using the _addNodeToAnchor function
+      await arAnchorManager.removeAnchor(currentAnchor!);
+      anchors.remove(currentAnchor);
+      currentAnchor = null;
+
+      await _addNodeToAnchor(currentTransformation);
     }
   }
+
 
   void _updateFrameNode() async {
     if (currentAnchor != null) {
-      await arObjectManager.removeNode(frameNode!);
-      frameNode = ARNode(
-        type: NodeType.localGLTF2,
-        uri: selectedFrame,
-        scale: vector.Vector3(currentScale, currentScale, currentScale),
-        position: vector.Vector3(0.0, 0.0, 0.0),
-        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
-      );
-      await arObjectManager.addNode(frameNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+      vector.Matrix4 currentTransformation = currentAnchor!.transformation;
+
+      // Remove the current anchor and replace it using the _addNodeToAnchor function
+      await arAnchorManager.removeAnchor(currentAnchor!);
+      anchors.remove(currentAnchor);
+      currentAnchor = null;
+
+      await _addNodeToAnchor(currentTransformation);
     }
   }
+
 
   void _updateNodeScale(double scale) async {
     if (currentAnchor != null) {
-      await arObjectManager.removeNode(artworkNode!);
-      artworkNode = ARNode(
-        type: NodeType.localGLTF2,
-        uri: selectedArtwork,
-        scale: vector.Vector3(scale, scale, scale),
-        position: vector.Vector3(0.0, 0.0, 0.0),
-        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
-      );
-      await arObjectManager.addNode(artworkNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+      currentScale = scale;
+      vector.Matrix4 currentTransformation = currentAnchor!.transformation;
 
-      await arObjectManager.removeNode(frameNode!);
-      frameNode = ARNode(
-        type: NodeType.localGLTF2,
-        uri: selectedFrame,
-        scale: vector.Vector3(scale, scale, scale),
-        position: vector.Vector3(0.0, 0.0, 0.0),
-        rotation: vector.Vector4(0.25, -0.25, 0.0, 0),
-      );
-      await arObjectManager.addNode(frameNode!, planeAnchor: currentAnchor as ARPlaneAnchor);
+      // Remove the current anchor and replace it using the _addNodeToAnchor function
+      await arAnchorManager.removeAnchor(currentAnchor!);
+      anchors.remove(currentAnchor);
+      currentAnchor = null;
+
+      await _addNodeToAnchor(currentTransformation);
     }
   }
+
+
 }
