@@ -330,7 +330,7 @@ class _ARHomePageState extends State<ARHomePage> {
     }
 
     if (furthestHitTestResult != null) {
-      // Add nodes at the location of the hit
+      // Add nodes at the location of the hit, Set the rotation to the detected plane
       furthestHitTestResult.worldTransform.setRotationX(0);
       furthestHitTestResult.worldTransform.setRotationY(0);
       furthestHitTestResult.worldTransform.setRotationZ(0);
